@@ -335,7 +335,7 @@ def upgrade(auto_remove: bool = False):
 
         # Upgrade all packages and remove unneeded transitive dependencies
         apt.upgrade(
-            name="Upgrade apt packages and remove unneeded dependencies"
+            name="Upgrade apt packages and remove unneeded dependencies",
             auto_remove=True
         )
     """
