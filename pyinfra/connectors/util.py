@@ -339,7 +339,7 @@ def make_unix_command(
             [
                 "env",
                 "SUDO_ASKPASS={0}".format(_sudo_askpass_path),
-                MaskString("{0}={1}".format(SUDO_ASKPASS_ENV_VAR, _sudo_password)),
+                MaskString("{0}='{1}'".format(SUDO_ASKPASS_ENV_VAR, _sudo_password)),
             ],
         )
 

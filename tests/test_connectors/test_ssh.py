@@ -494,7 +494,7 @@ class TestSSHConnector(TestCase):
         fake_ssh.exec_command.assert_called_with(
             (
                 "env SUDO_ASKPASS=/tmp/pyinfra-sudo-askpass-XXXXXXXXXXXX "
-                "PYINFRA_SUDO_PASSWORD=password "
+                "PYINFRA_SUDO_PASSWORD='password' "
                 "sudo -H -A -k sh -c 'echo Šablony'"
             ),
             get_pty=False,
@@ -536,7 +536,7 @@ class TestSSHConnector(TestCase):
         assert fake_getpass.called
         fake_ssh.exec_command.assert_called_with(
             "env SUDO_ASKPASS=/tmp/pyinfra-sudo-askpass-XXXXXXXXXXXX "
-            "PYINFRA_SUDO_PASSWORD=PASSWORD sudo -H -A -k sh -c 'echo hi'",
+            "PYINFRA_SUDO_PASSWORD='PASSWORD' sudo -H -A -k sh -c 'echo hi'",
             get_pty=False,
         )
 
