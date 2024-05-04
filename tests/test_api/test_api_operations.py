@@ -433,11 +433,11 @@ class TestNestedOperationsApi(PatchSSHTestCase):
 
         try:
             outer_result = server.shell(commands="echo outer")
-            assert outer_result._combined_output_lines is None
+            assert outer_result._combined_output is None
 
             def callback():
                 inner_result = server.shell(commands="echo inner")
-                assert inner_result._combined_output_lines is not None
+                assert inner_result._combined_output is not None
 
             python.call(function=callback)
 
@@ -447,7 +447,7 @@ class TestNestedOperationsApi(PatchSSHTestCase):
 
             assert len(state.get_op_order()) == 3
             assert state.results[somehost].success_ops == 3
-            assert outer_result._combined_output_lines is not None
+            assert outer_result._combined_output is not None
 
             disconnect_all(state)
         finally:

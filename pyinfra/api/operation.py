@@ -11,7 +11,7 @@ from functools import wraps
 from inspect import signature
 from io import StringIO
 from types import FunctionType
-from typing import Any, Callable, Generator, Iterator, Optional, cast
+from typing import TYPE_CHECKING, Any, Callable, Generator, Iterator, Optional, cast
 
 from typing_extensions import ParamSpec
 
@@ -36,11 +36,14 @@ from .util import (
 
 op_meta_default = object()
 
+if TYPE_CHECKING:
+    from pyinfra.connectors.util import CommandOutput
+
 
 class OperationMeta:
     _hash: str
 
-    _combined_output_lines = None
+    _combined_output: Optional["CommandOutput"] = None
     _commands: Optional[list[Any]] = None
     _maybe_is_change: Optional[bool] = False
     _success: Optional[bool] = None
@@ -69,13 +72,13 @@ class OperationMeta:
         self,
         success: bool,
         commands: list[Any],
-        combined_output_lines,
+        combined_output: "CommandOutput",
     ) -> None:
         if self.is_complete():
             raise RuntimeError("Cannot complete an already complete operation")
         self._success = success
         self._commands = commands
-        self._combined_output_lines = combined_output_lines
+        self._combined_output = combined_output
 
     def is_complete(self) -> bool:
         return self._success is not None
@@ -118,19 +121,17 @@ class OperationMeta:
             return True
         return False
 
-    # Output lines
-    def _get_lines(self, types=("stdout", "stderr")):
+    @property
+    def stdout_lines(self) -> list[str]:
         self._raise_if_not_complete()
-        assert self._combined_output_lines is not None
-        return [line for type_, line in self._combined_output_lines if type_ in types]
+        assert self._combined_output is not None
+        return self._combined_output.stdout_lines
 
     @property
-    def stdout_lines(self):
-        return self._get_lines(types=("stdout",))
-
-    @property
-    def stderr_lines(self):
-        return self._get_lines(types=("stderr",))
+    def stderr_lines(self) -> list[str]:
+        self._raise_if_not_complete()
+        assert self._combined_output is not None
+        return self._combined_output.stderr_lines
 
     @property
     def stdout(self) -> str:

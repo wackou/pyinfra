@@ -40,7 +40,7 @@ def run_local_process(
     stdin=None,
     timeout: Optional[int] = None,
     print_output: bool = False,
-    print_prefix=None,
+    print_prefix: str = "",
 ) -> tuple[int, "CommandOutput"]:
     process = Popen(command, shell=True, stdout=PIPE, stderr=PIPE, stdin=PIPE)
 
