@@ -31,6 +31,7 @@ from pyinfra.api import (
 from pyinfra.api.command import make_formatted_string_command
 from pyinfra.api.util import (
     get_call_location,
+    get_file_io,
     get_file_sha1,
     get_path_permissions_mode,
     get_template,
@@ -1000,7 +1001,7 @@ def template(src, dest, user=None, group=None, mode=None, create_remote_dir=True
         line_number = trace_frames[-1][1]
 
         # Quickly read the line in question and one above/below for nicer debugging
-        with open(src, "r") as f:
+        with get_file_io(src, "r") as f:
             template_lines = f.readlines()
 
         template_lines = [line.strip() for line in template_lines]
@@ -1013,7 +1014,7 @@ def template(src, dest, user=None, group=None, mode=None, create_remote_dir=True
                 e,
                 "\n".join(relevant_lines),
             ),
-        )
+        ) from None
 
     output_file = StringIO(output)
     # Set the template attribute for nicer debugging
