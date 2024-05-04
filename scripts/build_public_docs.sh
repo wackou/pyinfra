@@ -24,7 +24,7 @@ if [ "${BRANCH_NAME}" = "${LATEST_BRANCH}" ]; then
     env DOCS_VERSION=latest sphinx-build -a docs/ docs/public/en/latest/
 fi
 
-if [ -n "${TAG_NAME}" ] && [[ "$TAG_NAME" =~ ^v[0-9]\.[0-9]+(\.[0-9]+)?$ ]]; then
+if [ -n "${TAG_NAME}" ] && [[ "$TAG_NAME" =~ ^v[0-9]\.[0-9]+(\.[a-z0-9]+)?$ ]]; then
     echo "Building ${BRANCH_NAME} docs for tag: ${TAG_NAME}"
     env DOCS_VERSION=$BRANCH_NAME sphinx-build -a docs/ docs/public/en/$BRANCH_NAME/
 
