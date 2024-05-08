@@ -208,7 +208,7 @@ class NetworkDevices(FactBase):
             device_name = device_name_match.group(1)
 
             # Regular expressions to match different parts of the output
-            ether_re = re.compile(r"([0-9A-Fa-f:]{17})")
+            ether_re = re.compile(r"ether ([0-9A-Fa-f:]{17})")
             mtu_re = re.compile(r"mtu (\d+)")
             ipv4_re = (
                 re.compile(
