@@ -74,6 +74,12 @@
         "lo": {
             "mtu": 65536,
             "state": "UP",
+            "ipv4": {
+                "address": "127.0.0.1",
+                "mask_bits": 8,
+                "netmask": "255.0.0.0",
+                "broadcast": null
+            },
             "ipv6": {
                 "address": "::1",
                 "mask_bits": 128

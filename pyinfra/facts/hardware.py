@@ -211,12 +211,20 @@ class NetworkDevices(FactBase):
             ether_re = re.compile(r"ether ([0-9A-Fa-f:]{17})")
             mtu_re = re.compile(r"mtu (\d+)")
             ipv4_re = (
+                # ip a
                 re.compile(
-                    r"inet (\d+\.\d+\.\d+\.\d+)/(\d+)(?: brd (\d+\.\d+\.\d+\.\d+))"
-                ),  # ip a output,
+                    r"inet (?P<address>\d+\.\d+\.\d+\.\d+)/(?P<mask>\d+)(?: metric \d+)?(?: brd (?P<broadcast>\d+\.\d+\.\d+\.\d+))?"  # noqa: E501
+                ),
+                # ifconfig -a
                 re.compile(
-                    r"inet (\d+\.\d+\.\d+\.\d+)\s+netmask\s+((?:\d+\.\d+\.\d+\.\d+)|(?:[0-9a-fA-FxX]+))(?:\s+broadcast\s+(\d+\.\d+\.\d+\.\d+))"  # noqa: E501
-                ),  # ifconfig -a output
+                    r"inet (?P<address>\d+\.\d+\.\d+\.\d+)\s+netmask\s+(?P<mask>(?:\d+\.\d+\.\d+\.\d+)|(?:[0-9a-fA-FxX]+))(?:\s+broadcast\s+(?P<broadcast>\d+\.\d+\.\d+\.\d+))?"  # noqa: E501
+                ),
+            )
+            ipv6_re = (
+                # ip a
+                re.compile(r"inet6\s+(?P<address>[0-9a-fA-F:]+)/(?P<mask>\d+)"),
+                # ifconfig -a
+                re.compile(r"inet6\s+(?P<address>[0-9a-fA-F:]+)\s+prefixlen\s+(?P<mask>\d+)"),
             )
 
             # Parsing the output
@@ -235,18 +243,22 @@ class NetworkDevices(FactBase):
             )
 
             # IPv4 Addresses
+            ipv4_matches: list[re.Match[str]]
             for ipv4_re_ in ipv4_re:
-                ipv4_matches = ipv4_re_.findall(section)
-                if ipv4_matches:
+                ipv4_matches = list(ipv4_re_.finditer(section))
+                if len(ipv4_matches):
                     break
 
-            if ipv4_matches:
+            if len(ipv4_matches):
                 ipv4_info = []
                 for ipv4 in ipv4_matches:
-                    address = ipv4[0]
-                    mask_value = ipv4[1]
+                    address = ipv4.group("address")
+                    mask_value = ipv4.group("mask")
                     mask_bits, netmask = mask(mask_value)
-                    broadcast = ipv4[2] if len(ipv4) == 3 else None
+                    try:
+                        broadcast = ipv4.group("broadcast")
+                    except IndexError:
+                        broadcast = None
 
                     ipv4_info.append(
                         {
@@ -261,21 +273,17 @@ class NetworkDevices(FactBase):
                     device_info["ipv4"]["additional_ips"] = ipv4_info[1:]  # type: ignore[index]
 
             # IPv6 Addresses
-            ipv6_re = (
-                re.compile(r"inet6\s+([0-9a-fA-F:]+)/(\d+)"),
-                re.compile(r"inet6\s+([0-9a-fA-F:]+)\s+prefixlen\s+(\d+)"),
-            )
-
+            ipv6_matches: list[re.Match[str]]
             for ipv6_re_ in ipv6_re:
-                ipv6_matches = ipv6_re_.findall(section)
+                ipv6_matches = list(ipv6_re_.finditer(section))
                 if ipv6_matches:
                     break
 
-            if ipv6_matches:
+            if len(ipv6_matches):
                 ipv6_info = []
                 for ipv6 in ipv6_matches:
-                    address = ipv6[0]
-                    mask_bits = ipv6[1] or ipv6[2]
+                    address = ipv6.group("address")
+                    mask_bits = ipv6.group("mask")
                     ipv6_info.append({"address": address, "mask_bits": int(mask_bits)})
                 device_info["ipv6"] = ipv6_info[0]
                 if len(ipv6_matches) > 1:
