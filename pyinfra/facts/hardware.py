@@ -195,14 +195,14 @@ class NetworkDevices(FactBase):
         output = "\n".join(map(str.strip, output))
 
         # Splitting the output into sections per network device
-        device_sections = re.split(r"\n(?=\d+: \w|\w+:.*mtu.*)", output)
+        device_sections = re.split(r"\n(?=\d+: [^\s/:]|[^\s/:]+:.*mtu )", output)
 
         # Dictionary to hold all device information
         all_devices = {}
 
         for section in device_sections:
             # Extracting the device name
-            device_name_match = re.match(r"^(?:\d+: )?([\w@]+):", section)
+            device_name_match = re.match(r"^(?:\d+: )?([^\s/:]+):", section)
             if not device_name_match:
                 continue
             device_name = device_name_match.group(1)
