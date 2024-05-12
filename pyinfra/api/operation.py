@@ -98,8 +98,9 @@ class OperationMeta:
     def did_not_change(self):
         return context.host.when(lambda: not self._did_change())
 
-    def did_succeed(self) -> bool:
-        self._raise_if_not_complete()
+    def did_succeed(self, _raise_if_not_complete=True) -> bool:
+        if _raise_if_not_complete:
+            self._raise_if_not_complete()
         return self._success is True
 
     def did_error(self) -> bool:

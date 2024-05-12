@@ -273,7 +273,7 @@ def print_results(state: "State"):
             hosts_in_op += 1
 
             op_meta = state.ops[host][op_hash].operation_meta
-            if op_meta.did_succeed():
+            if op_meta.did_succeed(_raise_if_not_complete=False):
                 if op_meta._did_change():
                     hosts_in_op_success.append(host.name)
                 else:
