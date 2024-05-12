@@ -237,17 +237,21 @@ def print_meta(state: "State"):
                 logger.info,
                 [
                     pretty_op_name(state.op_meta[op_hash]),
-                    "-"
-                    if len(hosts_in_op) == 0
-                    else "{0} ({1})".format(
-                        len(hosts_in_op),
-                        truncate(", ".join(sorted(hosts_in_op)), 48),
+                    (
+                        "-"
+                        if len(hosts_in_op) == 0
+                        else "{0} ({1})".format(
+                            len(hosts_in_op),
+                            truncate(", ".join(sorted(hosts_in_op)), 48),
+                        )
                     ),
-                    "-"
-                    if len(hosts_maybe_in_op) == 0
-                    else "{0} ({1})".format(
-                        len(hosts_maybe_in_op),
-                        truncate(", ".join(sorted(hosts_maybe_in_op)), 48),
+                    (
+                        "-"
+                        if len(hosts_maybe_in_op) == 0
+                        else "{0} ({1})".format(
+                            len(hosts_maybe_in_op),
+                            truncate(", ".join(sorted(hosts_maybe_in_op)), 48),
+                        )
                     ),
                 ],
             )
