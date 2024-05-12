@@ -1054,7 +1054,7 @@ class TestSSHConnector(TestCase):
                 )
 
     @patch("pyinfra.connectors.ssh.SSHClient")
-    @patch("time.sleep")
+    @patch("pyinfra.connectors.ssh.sleep")
     def test_ssh_connect_fail_retry(self, fake_sleep, fake_ssh_client):
         for exception_class in (
             SSHException,
@@ -1062,6 +1062,9 @@ class TestSSHConnector(TestCase):
             socket_error,
             EOFError,
         ):
+            fake_sleep.reset_mock()
+            fake_ssh_client.reset_mock()
+
             inventory = make_inventory(
                 hosts=("unresposivehost",), override_data={"ssh_connect_retries": 1}
             )
@@ -1070,17 +1073,16 @@ class TestSSHConnector(TestCase):
             unresposivehost = inventory.get_host("unresposivehost")
             assert unresposivehost.data.ssh_connect_retries == 1
 
-            fake_ssh = MagicMock()
-            fake_ssh.connect.side_effect = exception_class()
-            fake_ssh_client.return_value = fake_ssh
+            fake_ssh_client().connect.side_effect = exception_class()
 
             with self.assertRaises(ConnectError):
                 unresposivehost.connect(show_errors=False, raise_exceptions=True)
-            assert fake_sleep.called_once()
-            assert fake_ssh_client.connect.called_twice()
+
+            fake_sleep.assert_called_once()
+            assert fake_ssh_client().connect.call_count == 2
 
     @patch("pyinfra.connectors.ssh.SSHClient")
-    @patch("time.sleep")
+    @patch("pyinfra.connectors.ssh.sleep")
     def test_ssh_connect_fail_success(self, fake_sleep, fake_ssh_client):
         for exception_class in (
             SSHException,
@@ -1088,6 +1090,9 @@ class TestSSHConnector(TestCase):
             socket_error,
             EOFError,
         ):
+            fake_sleep.reset_mock()
+            fake_ssh_client.reset_mock()
+
             inventory = make_inventory(
                 hosts=("unresposivehost",), override_data={"ssh_connect_retries": 1}
             )
@@ -1096,11 +1101,8 @@ class TestSSHConnector(TestCase):
             unresposivehost = inventory.get_host("unresposivehost")
             assert unresposivehost.data.ssh_connect_retries == 1
 
-            connection = MagicMock()
-            fake_ssh = MagicMock()
-            fake_ssh.connect.side_effect = [exception_class(), connection]
-            fake_ssh_client.return_value = fake_ssh
+            fake_ssh_client().connect.side_effect = [exception_class(), MagicMock()]
 
             unresposivehost.connect(show_errors=False, raise_exceptions=True)
-            assert fake_sleep.called_once()
-            assert fake_ssh_client.connect.called_twice()
+            fake_sleep.assert_called_once()
+            assert fake_ssh_client().connect.call_count == 2
