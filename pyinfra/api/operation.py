@@ -45,7 +45,7 @@ class OperationMeta:
 
     _combined_output: Optional["CommandOutput"] = None
     _commands: Optional[list[Any]] = None
-    _maybe_is_change: Optional[bool] = False
+    _maybe_is_change: Optional[bool] = None
     _success: Optional[bool] = None
 
     def __init__(self, hash, is_change: Optional[bool]):
@@ -87,6 +87,19 @@ class OperationMeta:
         if not self.is_complete():
             raise RuntimeError("Cannot evaluate operation result before execution")
 
+    @property
+    def will_change(self) -> bool:
+        if self._maybe_is_change is not None:
+            return self._maybe_is_change
+
+        op_data = context.state.get_op_data_for_host(context.host, self._hash)
+        cmd_gen = op_data.command_generator
+        for _ in cmd_gen():
+            self._maybe_is_change = True
+            return True
+        self._maybe_is_change = False
+        return False
+
     def _did_change(self) -> bool:
         return bool(self._success and len(self._commands or []) > 0)
 
@@ -112,15 +125,7 @@ class OperationMeta:
     def changed(self) -> bool:
         if self.is_complete():
             return self._did_change()
-
-        if self._maybe_is_change is not None:
-            return self._maybe_is_change
-
-        op_data = context.state.get_op_data_for_host(context.host, self._hash)
-        cmd_gen = op_data.command_generator
-        for _ in cmd_gen():
-            return True
-        return False
+        return self.will_change
 
     @property
     def stdout_lines(self) -> list[str]:
