@@ -32,6 +32,11 @@ class PyinfraOperation(Generic[P], Protocol):
     def __call__(
         self,
         #
+        # op args
+        # needs to be first
+        #
+        *args: P.args,
+        #
         # ConnectorArguments
         #
         # Auth
@@ -69,9 +74,8 @@ class PyinfraOperation(Generic[P], Protocol):
         _run_once: bool = False,
         _serial: bool = False,
         #
-        # The op itself
+        # op kwargs
         #
-        *args: P.args,
         **kwargs: P.kwargs,
     ) -> "OperationMeta":
         ...
