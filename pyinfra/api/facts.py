@@ -146,34 +146,26 @@ def _handle_fact_kwargs(state, host, cls, args, kwargs):
     args = args or []
     kwargs = kwargs or {}
 
-    # TODO: this is here to avoid popping stuff accidentally, this is horrible! Change the
-    # pop function to return the clean kwargs to avoid the indirect mutation.
-    kwargs = kwargs.copy()
+    # Start with a (shallow) copy of current operation kwargs if any
+    ctx_kwargs = (host.current_op_global_arguments or {}).copy()
+    # Update with the input kwargs (overrides)
+    ctx_kwargs.update(kwargs)
 
-    # Get the defaults *and* overrides by popping from kwargs, executor kwargs passed
-    # into get_fact override everything else (applied below).
-    override_kwargs, override_kwarg_keys = pop_global_arguments(
-        kwargs,
+    # Pop executor kwargs, pass remaining
+    global_kwargs, _ = pop_global_arguments(
+        ctx_kwargs,
         state=state,
         host=host,
-        keys_to_check=CONNECTOR_ARGUMENT_KEYS,
     )
 
-    executor_kwargs = _get_executor_kwargs(
-        state,
-        host,
-        override_kwargs=override_kwargs,  # type: ignore[arg-type]
-        override_kwarg_keys=override_kwarg_keys,
-    )
+    fact_kwargs = {key: value for key, value in kwargs.items() if key not in global_kwargs}
 
-    fact_kwargs = {}
-
-    if args or kwargs:
-        assert not isinstance(cls.command, str)
+    if args or fact_kwargs:
+        print(args, fact_kwargs)
         # Merges args & kwargs into a single kwargs dictionary
-        fact_kwargs = getcallargs(cls().command, *args, **kwargs)
+        fact_kwargs = getcallargs(cls().command, *args, **fact_kwargs)
 
-    return fact_kwargs, executor_kwargs
+    return fact_kwargs, global_kwargs
 
 
 def get_facts(state: "State", *args, **kwargs):
@@ -241,7 +233,7 @@ def _get_fact(
     fact = cls()
     name = fact.name
 
-    fact_kwargs, executor_kwargs = _handle_fact_kwargs(state, host, cls, args, kwargs)
+    fact_kwargs, global_kwargs = _handle_fact_kwargs(state, host, cls, args, kwargs)
 
     kwargs_str = get_kwargs_str(fact_kwargs)
     logger.debug(
@@ -257,15 +249,9 @@ def _get_fact(
             raise_exceptions=True,
         )
 
-    ignore_errors = (
-        host.current_op_global_arguments["_ignore_errors"]
-        if host.in_op and host.current_op_global_arguments
-        else state.config.IGNORE_ERRORS
-    )
-
     # Facts can override the shell (winrm powershell vs cmd support)
     if fact.shell_executable:
-        executor_kwargs["_shell_executable"] = fact.shell_executable
+        global_kwargs["_shell_executable"] = fact.shell_executable
 
     command = _make_command(fact.command, fact_kwargs)
     requires_command = _make_command(fact.requires_command, fact_kwargs)
@@ -284,6 +270,10 @@ def _get_fact(
     status = False
     output = CommandOutput([])
 
+    executor_kwargs = {
+        key: value for key, value in global_kwargs.items() if key in CONNECTOR_ARGUMENT_KEYS
+    }
+
     try:
         status, output = host.run_shell_command(
             command,
@@ -295,7 +285,7 @@ def _get_fact(
         log_host_command_error(
             host,
             e,
-            timeout=executor_kwargs["_timeout"],
+            timeout=global_kwargs["_timeout"],
         )
 
     stdout_lines, stderr_lines = output.stdout_lines, output.stderr_lines
@@ -334,12 +324,12 @@ def _get_fact(
 
         log_error_or_warning(
             host,
-            ignore_errors,
+            global_kwargs["_ignore_errors"],
             description=("could not load fact: {0} {1}").format(name, get_kwargs_str(fact_kwargs)),
         )
 
     # Check we've not failed
-    if not status and not ignore_errors and apply_failed_hosts:
+    if apply_failed_hosts and not status and not global_kwargs["_ignore_errors"]:
         state.fail_hosts({host})
 
     return data
