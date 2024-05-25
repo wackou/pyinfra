@@ -14,17 +14,15 @@
 
 ---
 
-<p>
-    <a href="https://docs.pyinfra.com"><strong>Documentation</strong></a> &rArr;
+<h3>
     <a href="https://docs.pyinfra.com/page/getting-started.html"><strong>Getting Started</strong></a> &bull;
-    <a href="https://docs.pyinfra.com/page/examples.html"><strong>Examples</strong></a> &bull;
+    <a href="https://github.com/pyinfra-dev/pyinfra-examples"><strong>Examples Repo</strong></a> &bull;
+    <a href="https://matrix.to/#/#pyinfra:matrix.org"><strong>Chat on Matrix</strong></a>
+</h3>
+<p>
+    <a href="https://docs.pyinfra.com"><strong>Documentation</strong></a> &bull;
     <a href="https://docs.pyinfra.com/page/support.html"><strong>Help & Support</strong></a> &bull;
     <a href="https://docs.pyinfra.com/page/contributing.html"><strong>Contributing</strong></a>
-</p>
-
-<p>
-    Chat &rArr;
-    <a href="https://matrix.to/#/#pyinfra:matrix.org"><strong><code>#pyinfra</code> on Matrix</strong></a>
 </p>
 
 ---
