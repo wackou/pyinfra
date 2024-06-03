@@ -41,6 +41,7 @@ from . import (
     openrc,
     pacman,
     pkg,
+    runit,
     systemd,
     sysvinit,
     upstart,
@@ -491,6 +492,9 @@ def service(
 
     elif host.get_fact(Which, command="initctl"):
         service_operation = upstart.service
+
+    elif host.get_fact(Which, command="sv"):
+        service_operation = runit.service
 
     elif (
         host.get_fact(Which, command="service")
