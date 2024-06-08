@@ -2,6 +2,8 @@
 Manage systemd services.
 """
 
+from __future__ import annotations
+
 from pyinfra import host
 from pyinfra.api import StringCommand, operation
 from pyinfra.facts.systemd import SystemdEnabled, SystemdStatus, _make_systemctl_cmd
@@ -10,7 +12,7 @@ from .util.service import handle_service_control
 
 
 @operation(is_idempotent=False)
-def daemon_reload(user_mode=False, machine=None, user_name=None):
+def daemon_reload(user_mode=False, machine: str | None = None, user_name: str | None = None):
     """
     Reload the systemd daemon to read unit file changes.
 
@@ -33,16 +35,16 @@ _daemon_reload = daemon_reload._inner  # noqa: E305
 
 @operation()
 def service(
-    service,
+    service: str,
     running=True,
     restarted=False,
     reloaded=False,
-    command=None,
-    enabled=None,
+    command: str | None = None,
+    enabled: bool | None = None,
     daemon_reload=False,
     user_mode=False,
-    machine=None,
-    user_name=None,
+    machine: str | None = None,
+    user_name: str | None = None,
 ):
     """
     Manage the state of systemd managed units.
