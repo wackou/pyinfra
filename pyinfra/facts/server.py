@@ -121,12 +121,12 @@ class Command(FactBase[str]):
 
 class Which(FactBase[Optional[str]]):
     """
-    Returns the path of a given command, if available.
+    Returns the path of a given command according to `command -v`, if available.
     """
 
     @staticmethod
     def command(command):
-        return "which {0} || true".format(command)
+        return "command -v {0} || true".format(command)
 
 
 class Date(FactBase[datetime]):
