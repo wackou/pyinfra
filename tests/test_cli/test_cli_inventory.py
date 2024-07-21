@@ -50,10 +50,11 @@ class TestCliInventory(PatchSSHTestCase):
         ctx_inventory.reset()
 
         hosts = ["somehost", "anotherhost", "someotherhost"]
+        filename = path.join("tests", "test_cli", "deploy", "group_data", "leftover_data.py")
         result = run_cli(
             "-y",
             ",".join(hosts),
-            f'--group-data={path.join("tests", "test_cli", "deploy", "group_data", "leftover_data.py")}',
+            f"--group-data={filename}",
             "exec",
             "uptime",
         )
