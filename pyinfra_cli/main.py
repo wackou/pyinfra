@@ -151,12 +151,6 @@ def _print_support(ctx, param, value):
 )
 # Debug args
 @click.option(
-    "--quiet",
-    is_flag=True,
-    default=False,
-    help="Hide most pyinfra output.",
-)
-@click.option(
     "--debug",
     is_flag=True,
     default=False,
@@ -274,7 +268,6 @@ def _main(
     limit: Iterable,
     no_wait: bool,
     serial: bool,
-    quiet: bool,
     debug: bool,
     debug_all: bool,
     debug_facts: bool,
@@ -297,7 +290,7 @@ def _main(
 
     # Setup state, config & inventory
     #
-    state = _setup_state(verbosity, quiet, yes)
+    state = _setup_state(verbosity, yes)
     config = Config()
     ctx_config.set(config)
 
@@ -520,7 +513,7 @@ def _set_verbosity(state, verbosity):
     return state
 
 
-def _setup_state(verbosity, quiet, yes):
+def _setup_state(verbosity, yes):
     cwd = getcwd()
     if cwd not in sys.path:  # ensure cwd is present in sys.path
         sys.path.append(cwd)
