@@ -61,7 +61,7 @@ def _get_group_data(dirname: str):
             group_data[group_name] = {
                 key: value
                 for key, value in attrs.items()
-                if key in keys and not key.startswith("_")
+                if key in keys and not key.startswith("__")
             }
 
     return group_data
