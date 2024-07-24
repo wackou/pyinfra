@@ -1,3 +1,9 @@
+# v3.0.2
+
+- Fix `OperationMeta.did_change`: this is now a function as originally designed
+- Add quick test for `host.when` context manager
+- Remove extra detected changes note when not relevant
+
 # v3.0.1
 
 - Switch to `command -v` not `which` in `server.Which` fact (@lemmi)
