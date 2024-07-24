@@ -361,6 +361,14 @@ def _main(
         else:
             logger.info("--> Detected changes:")
             print_meta(state)
+            click.echo(
+                """
+    Detected changes may not include every change pyinfra will execute.
+    Hidden side effects of operations may alter behaviour of future operations,
+    this will be shown in the results. The remote state will always be updated
+    to reflect the state defined by the input operations.""",
+                err=True,
+            )
 
     # If --debug-facts or --debug-operations, print and exit
     if debug_facts or debug_operations:
@@ -372,14 +380,6 @@ def _main(
     if dry:
         _exit()
 
-    click.echo(
-        """
-    Detected changes may not include every change pyinfra will execute.
-    Hidden side effects of operations may alter behaviour of future operations,
-    this will be shown in the results. The remote state will always be updated
-    to reflect the state defined by the input operations.""",
-        err=True,
-    )
     if (
         can_diff
         and not yes
