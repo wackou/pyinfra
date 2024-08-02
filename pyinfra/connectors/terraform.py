@@ -10,7 +10,7 @@ from .base import BaseConnector
 
 @memoize
 def show_warning():
-    logger.warning("The @terraform connector is in alpha!")
+    logger.warning("The @terraform connector is in beta!")
 
 
 def _flatten_dict_gen(d, parent_key, sep):
@@ -81,7 +81,9 @@ class TerraformInventoryConnector(BaseConnector):
         show_warning()
 
         if not name:
-            name = ""
+            # This is the default which allows one to create a Terraform output
+            # "pyinfra" and directly call: pyinfra @terraform ...
+            name = "pyinfra_inventory.value"
 
         with progress_spinner({"fetch terraform output"}):
             tf_output_raw = local.shell("terraform output -json")
