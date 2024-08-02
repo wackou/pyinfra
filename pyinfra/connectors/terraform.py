@@ -16,10 +16,9 @@ def show_warning():
 def _flatten_dict_gen(d, parent_key, sep):
     for k, v in d.items():
         new_key = parent_key + sep + k if parent_key else k
+        yield new_key, v
         if isinstance(v, dict):
             yield from _flatten_dict(v, new_key, sep=sep).items()
-        else:
-            yield new_key, v
 
 
 def _flatten_dict(d: dict, parent_key: str = "", sep: str = "."):
@@ -96,27 +95,36 @@ class TerraformInventoryConnector(BaseConnector):
             keys = "\n".join(f"   - {k}" for k in tf_output.keys())
             raise InventoryError(f"No Terraform output with key: `{name}`, valid keys:\n{keys}")
 
-        if not isinstance(tf_output_value, list):
+        if not isinstance(tf_output_value, (list, dict)):
             raise InventoryError(
                 "Invalid Terraform output type, should be `list`, got "
                 f"`{type(tf_output_value).__name__}`",
             )
 
-        for ssh_target in tf_output_value:
-            if isinstance(ssh_target, dict):
-                name = ssh_target.pop("name", ssh_target.get("ssh_hostname"))
-                if name is None:
-                    raise InventoryError(
-                        "Invalid Terraform list item, missing `name` or `ssh_hostname` keys",
-                    )
-                yield f"@terraform/{name}", ssh_target, ["@terraform"]
+        if isinstance(tf_output_value, list):
+            tf_output_value = {
+                "all": tf_output_value,
+            }
 
-            elif isinstance(ssh_target, str):
-                data = {"ssh_hostname": ssh_target}
-                yield f"@terraform/{ssh_target}", data, ["@terraform"]
-
-            else:
+        for group_name, hosts in tf_output_value.items():
+            if not isinstance(hosts, list):
                 raise InventoryError(
-                    "Invalid Terraform list item, should be `dict` or `str` got "
-                    f"`{type(ssh_target).__name__}`",
+                    "Invalid Terraform map value type, all values should be `list`, got "
+                    f"`{type(hosts).__name__}`",
                 )
+            for host in hosts:
+                if isinstance(host, dict):
+                    name = host.pop("name", host.get("ssh_hostname"))
+                    if name is None:
+                        raise InventoryError(
+                            "Invalid Terraform list item, missing `name` or `ssh_hostname` keys",
+                        )
+                    yield f"@terraform/{name}", host, ["@terraform", group_name]
+                elif isinstance(host, str):
+                    data = {"ssh_hostname": host}
+                    yield f"@terraform/{host}", data, ["@terraform", group_name]
+                else:
+                    raise InventoryError(
+                        "Invalid Terraform list item, should be `dict` or `str` got "
+                        f"`{type(host).__name__}`",
+                    )
