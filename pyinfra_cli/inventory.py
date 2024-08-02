@@ -105,7 +105,11 @@ def make_inventory(
     # (1) an inventory file is a common use case and (2) no other option can have a comma or an @
     # symbol in them.
     is_path_or_host_list_or_connector = (
-        path.exists(inventory) or "," in inventory or "@" in inventory
+        path.exists(inventory)
+        or "," in inventory
+        or "@" in inventory
+        # Special case: passing an arbitrary name and specifying --data ssh_hostname=a.b.c
+        or (override_data is not None and "ssh_hostname" in override_data)
     )
     if not is_path_or_host_list_or_connector:
         # Next, try loading the inventory from a python function. This happens before checking for a
