@@ -606,7 +606,7 @@ class SSHConnector(BaseConnector):
             rsync_flags=" ".join(flags),
             ssh_flags=" ".join(ssh_flags),
             remote_rsync_command=remote_rsync_command,
-            user=user,
+            user=user or "",
             hostname=hostname,
             src=src,
             dest=dest,
