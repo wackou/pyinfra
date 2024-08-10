@@ -554,7 +554,7 @@ def dump(
         )
     """
 
-    commands_bits = [
+    yield StringCommand(
         make_mysql_command(
             executable="mysqldump",
             database=database,
@@ -565,9 +565,7 @@ def dump(
         ),
         ">",
         QuoteString(dest),
-    ]
-
-    yield StringCommand(*commands_bits)
+    )
 
 
 @operation(is_idempotent=False)
@@ -598,7 +596,7 @@ def load(
         )
     """
 
-    commands_bits = [
+    yield StringCommand(
         make_mysql_command(
             database=database,
             user=mysql_user,
@@ -608,5 +606,4 @@ def load(
         ),
         "<",
         QuoteString(src),
-    ]
-    yield StringCommand(*commands_bits)
+    )
