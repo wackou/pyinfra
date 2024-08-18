@@ -10,7 +10,7 @@ from pyinfra.facts.flatpak import FlatpakPackages
 
 
 @operation()
-def package(
+def packages(
     packages: str | list[str] | None = None,
     present=True,
 ):
